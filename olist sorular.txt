@@ -1,0 +1,22 @@
+/** CEVAP - 2017 Kasım'da büyük bir sipariş sıçraması vardı: bunun nedeni insanların Noel için bir ay önceden hazırlık
+--ANALIZ VE I$ İÇGÖROLERİ
+--Olist'in e-ticaret platformuna dair daha iyi içgörüler kazanmasına ve büyüme fırsatlarını optimize etmesine yardımcı
+** 1. Olist tarafindan elde edilen toplam gelir nedir ve bu gelir zaman içinde nasil değişmiștir?
+** 2. Olist'te toplan kaç sipariş verilmiştir ve bu sayı aylık veya mevsinsel olarak nasıl bir değişim göstermektedir?
+-* 3. Olist'teki en popüler ürün kategorileri nelerdir ve satiş hacimleri birbirine göre nasıldır?
+değismektedir?
+4.Olist’de ortalama sipariş değeri (AOV) nedir ve bu değer ğrün kategorisine veya ödeme yöntemine göre nasıl değişmektedir?
+
+5.Olist'te kaç aktif saticı bulunmaktadir
+ve bu sayı zaman içinde nasıl değişmektedir?
+-- 6. Olist'teki saticı puanlarının dağilımı nedir ve bu dağilin satiş performansinı nasil etkilemektedir?
+7.Tekrar alim (repeat purchase) yapan kaç müşteri vardir ve bu müşteriler toplam satışların yüzde kaçını oluşturmaktadır?
+8.Olist te satilan ürünlerin ortalama müşteri puani (rating) nedir ve bu puan satiş performansinı nasıl etkilemektedir?
+9.Olist'teki ortalama siparis iptal orani nedir ve bu oran satiş performansinı nasil etkilemektedir?
+10.Olist teki en çok satan ürünler nelerdir ve bu ürünlerin satiş trendleri zaman içinde nasıl değişmiştir?
+11.Olist müşterileri tarafından en sik kullanılan ödeme yöntemleri nelerdir ve bunlar ürün kategorisine veya
+coğrafi bölgeye göre nasil değişmektedir?
+-12. Müşteri yorumlara ve puanları, Olist teki ürün performansini nasil etkilemektedir?
+1. Hangi ürün kategorileri en yüksek kår marjlarına sahiptir ve şirket, farklı kategorilerdeki kärlılığı nasıl artirabilir?
+14.Olist'in pazarlama harcaması ve kanal karmasi, satişlari ve müşteri edinme maliyetlerini (CAC) nasıl etkilemektedir ve girket Yatirım Getirisini (ROI) artirmak için pazarlama stratejisini nasil optimize edebilir?
+15.Yüksek müşteri yoğunluğuna sahip coğrafi konumlar (Geolocation) nelerdir? Bu konumlara göre müşteri tutma (retention) oranini hesaplayin.

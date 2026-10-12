@@ -1,0 +1,133 @@
+# 🛒 Olist E-Ticaret Veri Analizi — SQL Server (SSMS)
+
+**Kullanılan Teknolojiler:** SQL Server, SSMS, T-SQL (CTE, JOIN, Window Functions, Aggregations)
+
+---
+
+## 🎯 Projenin Amacı ve İş Problemi
+
+Bu proje, Brezilya'nın en büyük e-ticaret platformlarından Olist'in herkese açık veri seti kullanılarak hazırlanmıştır. Amaç; ham veriyi önce güvenilir hale getirmek (veri temizleme), ardından SQL ile satış, müşteri, ürün, satıcı ve ödeme davranışlarını analiz ederek iş kararlarına yön verecek içgörüler üretmektir.
+
+## 🔍 Temel Odak Noktaları
+
+- **Veri Kalitesi:** NULL, duplicate, normalizasyon ve mantık kontrolleri; temizlenmiş (cleaned) tabloların oluşturulması.
+- **Satış Analizi:** Zaman içinde toplam gelir, aylık/mevsimsel sipariş trendleri, ortalama sipariş değeri (AOV).
+- **Müşteri Analizi:** Tekrar alışveriş yapan müşteriler, yüksek yoğunluklu müşteri lokasyonları.
+- **Ürün ve Kategori Analizi:** En popüler kategoriler, en çok satan ürünler, kategori bazlı marj.
+- **Satıcı Analizi:** Aktif satıcı sayısı ve satıcı puan dağılımı.
+- **Ödeme ve İptal Analizi:** Ödeme yöntemi dağılımı ve sipariş iptal oranı.
+
+---
+
+## 🗂️ Veri Seti
+
+[Olist Brazilian E-Commerce Public Dataset](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) — `dbo` şeması altında 9 tablo:
+
+| Tablo | İçerik |
+|---|---|
+| `customers` | Müşteri ve lokasyon bilgisi |
+| `geolocation` | Posta kodu bazlı koordinatlar |
+| `order_items` | Sipariş kalemleri (fiyat, kargo ücreti) |
+| `order_payments` | Ödeme tipi, taksit, tutar |
+| `order_reviews` | Müşteri puanı ve yorumları |
+| `orders` | Sipariş durumu ve tarihler |
+| `products` | Ürün ve kategori bilgisi |
+| `sellers` | Satıcı ve lokasyon bilgisi |
+| `product_category_name_translation` | Portekizce → İngilizce kategori çevirisi |
+
+---
+
+## 🧹 1. Veri Temizleme Adımları
+
+Önce sorunlar **tespit edilir**, sonra veri üzerinde değişiklik yapılır. Her tablo için aynı akış uygulanmıştır:
+
+1. **NULL kontrolü** – Hangi sütunlarda eksik veri var?
+2. **Duplicate kontrolü** – Tekrar eden kayıtlar var mı?
+3. **Normalizasyon** – Metin alanlarında boşluk temizliği ve büyük harfe çevirme (şehir, eyalet, kategori vb. `UPPERCASE`).
+4. **Mantık kontrolleri** – Örn. kargoya veriliş tarihinin sipariş tarihinden önce olması gibi tutarsızlıklar.
+5. **Cleaned tablo oluşturma** – Temiz veri kalıcı tabloya yazılır.
+6. **Yeniden kontrol** – Temizlik sonrası aynı kontroller tekrar çalıştırılır.
+
+**İsimlendirme standardı:** `dbo.olist_real_<tablo>_cleaned`
+
+```sql
+-- Örnek: temizlenmiş müşteri tablosu
+SELECT
+    customer_id,
+    customer_unique_id,
+    UPPER(LTRIM(RTRIM(customer_city)))  AS customer_city,
+    UPPER(LTRIM(RTRIM(customer_state))) AS customer_state
+INTO dbo.olist_real_customers_cleaned
+FROM dbo.customers;
+```
+
+> 📌 Tüm temizleme ve analiz sorguları tek bir entegre script'te toplanmıştır (`olist_sqlserver_full.sql`).
+
+---
+
+## 📊 2. SQL Analizleri
+
+| # | Analiz Sorusu | Kullanılan Teknikler |
+|---|---|---|
+| 1 | Zaman içinde toplam gelir nasıl değişiyor? | `SUM`, `GROUP BY`, tarih fonksiyonları |
+| 2 | Aylık / mevsimsel sipariş sayıları | `COUNT(DISTINCT)`, `DATEPART` |
+| 3 | En popüler ürün kategorileri | `JOIN`, `TOP`, `ORDER BY` |
+| 4 | Ortalama sipariş değeri (AOV) | CTE, `AVG` |
+| 5 | Aktif satıcı sayısı | `COUNT(DISTINCT seller_id)` |
+| 6 | Satıcı puan dağılımı | `JOIN`, `AVG`, `CASE WHEN` |
+| 7 | Tekrar alışveriş yapan müşteriler | CTE, `HAVING` |
+| 8 | Sipariş iptal oranı | `CASE WHEN`, oran hesabı |
+| 9 | En çok satan ürünler | `JOIN`, `RANK()` |
+| 10 | Ödeme yöntemi dağılımı | `GROUP BY`, yüzde hesabı |
+| 11 | Kategori bazlı marj | `JOIN`, toplulaştırma |
+| 12 | Yüksek yoğunluklu müşteri lokasyonları | `GROUP BY` eyalet/şehir |
+
+```sql
+-- Örnek: Aylık gelir trendi
+SELECT
+    YEAR(o.order_purchase_timestamp)  AS yil,
+    MONTH(o.order_purchase_timestamp) AS ay,
+    SUM(p.payment_value)              AS toplam_gelir
+FROM dbo.olist_real_orders_cleaned o
+JOIN dbo.olist_real_order_payments_cleaned p
+    ON o.order_id = p.order_id
+WHERE o.order_status = 'DELIVERED'
+GROUP BY YEAR(o.order_purchase_timestamp), MONTH(o.order_purchase_timestamp)
+ORDER BY yil, ay;
+```
+
+---
+
+## 💡 3. Bulgular ve İş Tavsiyeleri
+
+> ✍️ Bu bölümü sorgu sonuçlarınla doldur. Önerilen format:
+
+- **Gelir Trendi:** _(örn. Gelir hangi dönemde en yüksek? Büyüme oranı nedir?)_
+- **Kategoriler:** _(örn. En çok satan 3 kategori ve toplam içindeki payı)_
+- **Müşteri Davranışı:** _(örn. Tekrar alışveriş oranı ve ne anlama geldiği)_
+- **Satıcılar:** _(örn. Düşük puanlı satıcıların ortak özelliği)_
+- **İptaller:** _(örn. İptal oranı ve aksiyon gerekip gerekmediği)_
+
+**Önerilen aksiyonlar:** _(her bulgu için 1 somut iş önerisi)_
+
+---
+
+## ▶️ Nasıl Çalıştırılır?
+
+1. Kaggle'dan veri setini indir.
+2. SSMS'te yeni bir veritabanı oluştur ve CSV dosyalarını `dbo` şemasına içe aktar (Import Flat File).
+3. `olist_sqlserver_full.sql` dosyasını aç ve bölümleri sırayla çalıştır:
+   - Bölüm 1: Veri kontrolleri ve temizleme
+   - Bölüm 2: Analiz sorguları
+
+## 📁 Repo Yapısı
+
+```
+├── README.md
+├── olist_sqlserver_full.sql   # Temizleme + analiz scripti
+└── images/                    # (Opsiyonel) sorgu çıktısı ekran görüntüleri
+```
+
+## 👩‍💻 Yazar
+
+**Şevval Nur Gümüşer** — Bilgisayar Mühendisi | Veri Analizi & Makine Öğrenmesi
